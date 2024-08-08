@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Datos</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Estilos para el menú de navegación */
+        nav {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+        }
+        nav ul {
+            list-style: none;
+            padding: 0;
+        }
+        nav ul li {
+            display: inline;
+            margin-right: 10px;
+        }
+        nav ul li a {
+            color: #fff;
+            text-decoration: none;
+        }
+        nav ul li a:hover {
+            text-decoration: underline;
+        }
+        .container {
+            padding: 20px;
+        }
+        /* Estilos para ocultar secciones */
+        section {
+            display: none;
+        }
+        section.active {
+            display: block;
+        }
+        /* Estilos para las tablas */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="#" data-target="pacientes-section">Pacientes</a></li>
+            <li><a href="#" data-target="medicos-section">Médicos</a></li>
+            <li><a href="#" data-target="tutores-section">Tutores</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <h1>Gestión de Datos</h1>
+        
+        <!-- Sección para Pacientes -->
+        <section id="pacientes-section">
+            <h2>Lista de Pacientes</h2>
+            <p id="pacientes-loading">Cargando pacientes...</p>
+            <p id="pacientes-error"></p>
+            <table id="pacientes-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Edad</th>
+                        <th>Género</th>
+                    </tr>
+                </thead>
+                <tbody id="pacientes-body">
+                    <!-- Aquí se insertarán los datos de los pacientes mediante JavaScript -->
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Sección para Médicos -->
+        <section id="medicos-section">
+            <h2>Lista de Médicos</h2>
+            <p id="medicos-loading">Cargando médicos...</p>
+            <p id="medicos-error"></p>
+            <table id="medicos-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Especialidad</th>
+                    </tr>
+                </thead>
+                <tbody id="medicos-body">
+                    <!-- Aquí se insertarán los datos de los médicos mediante JavaScript -->
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Sección para Tutores -->
+        <section id="tutores-section">
+            <h2>Lista de Tutores</h2>
+            <p id="tutores-loading">Cargando tutores...</p>
+            <p id="tutores-error"></p>
+            <table id="tutores-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Relación</th>
+                    </tr>
+                </thead>
+                <tbody id="tutores-body">
+                    <!-- Aquí se insertarán los datos de los tutores mediante JavaScript -->
+                </tbody>
+            </table>
+        </section>
+    </div>
+
+    <script>
+        // Función para cargar datos desde un endpoint y mostrarlos en una tabla
+        function loadData(url, tableBodyId, loadingId, errorId, columns) {
+            document.getElementById(loadingId).style.display = 'block';
+            document.getElementById(errorId).textContent = '';
+
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error de red: ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    document.getElementById(loadingId).style.display = 'none';
+                    const tableBody = document.getElementById(tableBodyId);
+                    tableBody.innerHTML = ''; // Limpiar tabla antes de agregar nuevos datos
+                    if (data.length > 0) {
+                        data.forEach(item => {
+                            const tr = document.createElement('tr');
+                            columns.forEach(column => {
+                                const td = document.createElement('td');
+                                td.textContent = item[column] || 'No disponible';
+                                tr.appendChild(td);
+                            });
+                            tableBody.appendChild(tr);
+                        });
+                    } else {
+                        tableBody.innerHTML = '<tr><td colspan="' + columns.length + '">No hay datos disponibles.</td></tr>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al cargar los datos:', error);
+                    document.getElementById(loadingId).style.display = 'none';
+                    document.getElementById(errorId).textContent = `Error al cargar los datos: ${error.message}`;
+                });
+        }
+
+        // Función para manejar el clic en los enlaces del menú
+        function handleMenuClick(event) {
+            event.preventDefault(); // Evitar el comportamiento por defecto del enlace
+
+            const targetSectionId = event.target.getAttribute('data-target');
+            const sections = document.querySelectorAll('section');
+
+            // Ocultar todas las secciones
+            sections.forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Mostrar la sección seleccionada
+            const targetSection = document.getElementById(targetSectionId);
+            targetSection.classList.add('active');
+
+            // Cargar datos de la sección seleccionada si no se han cargado antes
+            if (targetSectionId === 'pacientes-section' && !window.pacientesLoaded) {
+                loadData('http://gy-app-ws.azurewebsites.net/pacientes', 'pacientes-body', 'pacientes-loading', 'pacientes-error', ['id', 'nombre', 'edad', 'genero']);
+                window.pacientesLoaded = true;
+            } else if (targetSectionId === 'medicos-section' && !window.medicosLoaded) {
+                loadData('http://gy-app-ws.azurewebsites.net/geriatras', 'medicos-body', 'medicos-loading', 'medicos-error', ['id', 'nombre', 'especialidad']);
+                window.medicosLoaded = true;
+            } else if (targetSectionId === 'tutores-section' && !window.tutoresLoaded) {
+                loadData('http://gy-app-ws.azurewebsites.net/tutores', 'tutores-body', 'tutores-loading', 'tutores-error', ['id', 'nombre', 'relacion']);
+                window.tutoresLoaded = true;
+            }
+        }
+
+        // Añadir evento a los enlaces del menú
+        document.querySelectorAll('nav a').forEach(link => {
+            link.addEventListener('click', handleMenuClick);
+        });
+
+        // Mostrar la sección de Pacientes por defecto y cargar datos
+        document.addEventListener('DOMContentLoaded', () => {
+            const defaultSection = document.getElementById('pacientes-section');
+            defaultSection.classList.add('active');
+            loadData('http://gy-app-ws.azurewebsites.net/pacientes', 'pacientes-body', 'pacientes-loading', 'pacientes-error', ['id', 'nombre', 'edad', 'genero']);
+            window.pacientesLoaded = true; // Marcar como cargado para no recargar los datos
+        });
+    </script>
+    <div id="root"></div>
+</body>
+</html>
+

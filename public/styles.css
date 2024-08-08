@@ -1,0 +1,51 @@
+/* styles.css */
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+}
+
+.container {
+    max-width: 900px;
+    margin: auto;
+    padding: 20px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+}
+
+#content {
+    padding: 10px;
+}
+
+#loading {
+    text-align: center;
+    color: #888;
+}
+
+#pacientes-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+#pacientes-list li {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 10px;
+}
+
+#pacientes-list li:last-child {
+    border-bottom: none;
+}
+
+#error {
+    color: red;
+    text-align: center;
+}
